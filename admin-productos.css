@@ -18,7 +18,7 @@ body {
   top: 0;                /* Pegado arriba */
   left: 0;
   right: 0;
-  height: 300px;          /* Ajusta la altura del header */
+  height: 110px;          /* Ajusta la altura del header */
   background-color: #7a553a;
   padding: 10px 40px;    /* Ajusta espacio interno */
   display: flex;
