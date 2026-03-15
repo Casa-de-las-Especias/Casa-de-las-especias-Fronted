@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Administrador - AI Tech Store</title>
+  <link rel="stylesheet" href="adminIndex.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+</head>
+<body>
+
+  <header class="admin-header">
+    <h1>AI Tech Store - Administrador</h1>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="adminIndex.html">Inicio</a></li>
+        <li><a href="admin-productos.html">Productos</a></li>
+        <li><a href="admin-usuarios.html">Usuarios</a></li>
+        <li><a href="admin-facturas.html">Facturas</a></li>
+        <li><a href="login.html"><i class="fas fa-power-off"></i></a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <section class="bienvenida">
+      <h2>Bienvenido al Panel de Administrador</h2>
+      <p>Desde esta interfaz puedes gestionar el sistema completo de AI Tech Store.</p>
+    </section>
+
+    <section class="resumen">
+      <div class="card">
+        <h3>Usuarios registrados</h3>
+        <p></p>
+      </div>
+      <div class="card">
+        <h3>Productos activos</h3>
+        <p></p>
+      </div>
+      <div class="card">
+        <h3>Facturas emitidas</h3>
+        <p></p>
+      </div>
+      <div class="card">
+        <h3>Ingresos totales</h3>
+        <p></p>
+      </div>
+    </section>
+    
+
+    <div class="info-sections-row">
+  <section class="info-section system">
+    <i class="fas fa-microchip"></i>
+    <h3>Sistema AI Tech Store</h3>
+    <p>Plataforma inteligente que conecta clientes con tecnología IA en un entorno interactivo y seguro.</p>
+  </section>
+
+  <section class="info-section usuarios">
+    <i class="fas fa-users-cog"></i>
+    <h3>Gestión de Usuarios</h3>
+    <p>Administra los roles, accesos y privilegios de todos los usuarios registrados.</p>
+  </section>
+
+  <section class="info-section productos">
+    <i class="fas fa-box-open"></i>
+    <h3>Gestión de Productos</h3>
+    <p>Controla el catálogo de productos, su inventario y las categorías basadas en IA.</p>
+  </section>
+
+  <section class="info-section facturas">
+    <i class="fas fa-file-invoice-dollar"></i>
+    <h3>Facturación Inteligente</h3>
+    <p>Visualiza y genera facturas con información en tiempo real y cálculos automáticos.</p>
+  </section>
+</div>
+
+    <br><br>
+    <hr class="divider" />
+    <br><br>
+
+    <div id="admin-dashboard" >
+    <section class="info-section-mision">
+    <h2>Misión</h2>
+    <p>Brindar soluciones tecnológicas con inteligencia artificial que mejoren la vida diaria en el hogar, la educación y el ambiente.</p>
+  </section>
+
+  <section class="info-section-vision">
+    <h2>Visión</h2>
+    <p>Ser la tienda líder en innovación tecnológica con IA, reconocida por su impacto positivo y sostenible en la sociedad.</p>
+  </section>
+
+  <section class="info-section-novedades">
+    <h2>Últimas Novedades</h2>
+    <ul>
+      <li>🚀 Se lanzó la nueva línea de accesorios con IA.</li>
+      <li>🧠 Integración con asistentes virtuales mejorada.</li>
+      <li>📦 Nuevos productos en la categoría "Educación".</li>
+    </ul>
+  </section>
+
+  <section class="info-section-porque">
+    <h2>¿Por qué usar AI Tech Store?</h2>
+    <ul>
+      <li>✔ Compra rápida y segura</li>
+      <li>✔ Productos con tecnología de IA de punta</li>
+      <li>✔ Seguimiento de facturas y pedidos en tiempo real</li>
+      <li>✔ Panel intuitivo para administradores</li>
+    </ul>
+  </section>
+
+  <section class="info-section-lema">
+    <h2>"La inteligencia artificial es la nueva electricidad"</h2>
+    <p>- Andrew Ng</p>
+  </section>
+
+  <section class="info-section-reseñas">
+    <h2>Lo que dicen nuestros usuarios</h2>
+    <blockquote>“AI Tech Store me ayudó a automatizar mi hogar en minutos. ¡Increíble!” – Cliente Premium</blockquote>
+    <blockquote>“Gracias a sus productos con IA, mi escuela es más interactiva y eficiente.” – Profesor</blockquote>
+  </section>
+  <div class="cards-container">
+  </main>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      // Usuarios registrados
+      const resUsuarios = await fetch("http://localhost:8082/api/usuarios/count");
+      const usuarios = await resUsuarios.json();
+      document.querySelector(".card:nth-child(1) p").textContent = usuarios.usuariosCount;
+
+      // Productos activos
+      const resProductos = await fetch("http://localhost:8082/api/productos/count");
+      const productos = await resProductos.json();
+      document.querySelector(".card:nth-child(2) p").textContent = productos.productosCount;
+
+      // Facturas emitidas
+      const resFacturas = await fetch("http://localhost:8082/api/facturas/count");
+      const facturas = await resFacturas.json();
+      document.querySelector(".card:nth-child(3) p").textContent = facturas.facturasCount;
+
+      // Ingresos totales
+      const resIngresos = await fetch("http://localhost:8082/api/facturas/ingresos/total");
+      const ingresos = await resIngresos.json();
+      document.querySelector(".card:nth-child(4) p").textContent = `$${ingresos.totalIngresos.toLocaleString("es-CR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    } catch (error) {
+      console.error("Error al cargar los datos del dashboard:", error);
+    }
+  });
+</script>
+
+</body>
+</html>

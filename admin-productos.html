@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Productos - Admin</title>
+  <link rel="stylesheet" href="admin-productos.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+  <header class="admin-header">
+    <div class="logo-titulo">
+      <img src="img/logo.png" alt="Logo" class="admin-logo">
+      <h1>La Casa de las Especias - Administrador</h1>
+    </div>
+    <!-- 
+    <nav>
+      <ul class="nav-links">
+        <li><a href="adminIndex.html">Inicio</a></li>
+        <li><a href="admin-productos.html" class="active">Productos</a></li>
+      </ul>
+    </nav>
+    -->
+  </header>
+  <main class="admin-main">
+    <div class="productos-header">
+      <h2>Gestión de Productos<br></h2>
+
+      <div style="display:flex; gap:10px;">
+        <button id="agregarProducto">+ Productos</button>
+        <button id="agregarUnitario">+ Productos Varios</button>
+      </div>
+
+    </div>
+
+    <section class="busqueda-container">
+      <input type="text" id="buscador-productos" placeholder="Buscar por Nombre..." />
+      <i class="fa fa-search icono-lupa"></i>
+    </section>
+
+    <section class="tabla-productos">
+      <table>
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Stock</th>
+            <th>1kg</th>
+            <th>500g</th>
+            <th>250g</th>
+            <th>100g</th>
+            <th>Más</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="productos-body">
+          <!-- Datos cargados desde el backend -->
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <!-- Formulario flotante oculto -->
+  <div id="form-container" class="modalAgregar">
+    <form id="producto-form" class="form-flotante">
+      <h3 id="titulo-form"></h3>
+      <label>Nombre: <input name="nombre" type="text" required /></label>
+      <label>Stock:
+        <div class="stock-container">
+          <input name="stockCantidad" type="number" step="any" min="0" required />
+
+          <select name="stockUnidad" required>
+            <option value="" disabled selected>Medida</option>
+            <option value="Kg">Kg</option>
+            <option value="g">g</option>
+            <option value="L">L</option>
+            <option value="ml">ml</option>
+            <option value="unidades">Unidades</option>
+          </select>
+        </div>
+      </label>
+      <div id="campos-especia">
+        <label>Precio Kilo: <input name="kilo" type="number" step="0.01" min="0" /></label>
+
+        <label>Mínimo Presentación:
+          <select name="minimoGramos" required>
+            <option value="1000">1kg</option>
+            <option value="500">500g</option>
+            <option value="250">250g</option>
+            <option value="100">100g</option>
+            <option value="50">50g</option>
+            <option value="25">25g</option>
+            <option value="15">15g</option>
+            <option value="10">10g</option>
+          </select>
+        </label>
+      </div>
+      <div id="campos-unitario" style="display:none;">
+
+        <label>Precio Unitario:
+          <input name="precioUnitario" type="number" step="0.01" min="0">
+        </label>
+
+        <label>Tamaño del Producto:
+          <input name="unidadCantidad" type="number" step="any" min="0">
+        </label>
+
+        <label>Unidad de Medida:
+          <select name="unidadMedida">
+            <option value="g">g</option>
+            <option value="Kg">Kg</option>
+            <option value="ml">ml</option>
+            <option value="L">L</option>
+            <option value="unidades">Unidades</option>
+          </select>
+        </label>
+
+      </div>
+      </select>
+      </label>
+      <label style="display:none;">Imagen URL: <input name="imagenURL" type="text" /></label>
+      <div class="botones-form">
+        <button type="submit" id="submit-btn"></button>
+        <button type="button" id="cerrar-form">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal detalle producto -->
+  <div id="detalle-container" class="modalAgregar">
+    <div class="form-flotante">
+      <h3 id="detalle-titulo"></h3>
+      <table id="detalle-tabla">
+        <thead>
+          <tr>
+            <th>Presentación</th>
+            <th>Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas generadas dinámicamente -->
+        </tbody>
+      </table>
+      <div class="botones-form">
+        <button type="button" id="cerrar-detalle">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLO CAMBIOS EN EL SCRIPT -->
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+      const tbody = document.getElementById("productos-body");
+      const btnAgregar = document.getElementById("agregarProducto");
+      const btnAgregarUnitario = document.getElementById("agregarUnitario");
+      let tipoProductoSeleccionado = "ESPECIA";
+
+      const buscadorInput = document.getElementById("buscador-productos");
+
+      const formContainer = document.getElementById("form-container");
+      const form = document.getElementById("producto-form");
+      const tituloForm = document.getElementById("titulo-form");
+      const btnCerrarForm = document.getElementById("cerrar-form");
+      const submitBtn = document.getElementById("submit-btn");
+
+      const camposEspecia = document.getElementById("campos-especia");
+      const camposUnitario = document.getElementById("campos-unitario");
+
+      const detalleContainer = document.getElementById("detalle-container");
+      const detalleTitulo = document.getElementById("detalle-titulo");
+      const detalleTablaBody = document.querySelector("#detalle-tabla tbody");
+      const cerrarDetalleBtn = document.getElementById("cerrar-detalle");
+
+      let editandoId = null;
+      let ultimoEditadoId = null;
+
+
+
+      async function cargarProductos(url = "http://localhost:8082/api/productos") {
+
+        tbody.innerHTML = "<tr><td colspan='9'>Cargando...</td></tr>";
+
+        try {
+
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Error al cargar productos");
+
+          const productos = await res.json();
+
+          productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+          tbody.innerHTML = "";
+
+          productos.forEach(producto => {
+
+            const fila = document.createElement("tr");
+
+            if (producto.id === ultimoEditadoId) {
+              fila.setAttribute("id", "producto-editado");
+            }
+
+            const tieneMenores =
+              producto.tipoProducto === "ESPECIA" &&
+              (producto.cincuenta_g > 0 ||
+                producto.veinticinco_g > 0 ||
+                producto.quince_g > 0 ||
+                producto.diez_g > 0);
+
+            const esUnitario =
+              producto.tipoProducto &&
+              producto.tipoProducto === "UNITARIO";
+
+            fila.innerHTML = `
+<td>
+<img src="${producto.imagenURL ? producto.imagenURL + '?t=' + Date.now() : 'placeholder.png'}"
+style="max-width:60px; max-height:60px;">
+</td>
+
+<td>${producto.nombre}</td>
+
+<td>${producto.stockCantidad} ${producto.stockUnidad}</td>
+
+<td>${producto.kilo>0?`₡${producto.kilo}`:"-"}</td>
+<td>${producto.medio>0?`₡${producto.medio}`:"-"}</td>
+<td>${producto.cuarto>0?`₡${producto.cuarto}`:"-"}</td>
+<td>${producto.cien_g>0?`₡${producto.cien_g}`:"-"}</td>
+
+<td>${tieneMenores || esUnitario ? `<button class="detalle">...</button>` : "-"}</td>
+
+<td>
+<div class="acciones">
+<button class="editar">Editar</button>
+<button class="eliminar">Eliminar</button>
+</div>
+</td>
+`;
+
+            tbody.appendChild(fila);
+
+
+
+            if (tieneMenores || esUnitario) {
+
+              fila.querySelector(".detalle").addEventListener("click", () => {
+
+                detalleTitulo.textContent = producto.nombre;
+                detalleTablaBody.innerHTML = "";
+
+                if (producto.tipoProducto === "ESPECIA") {
+
+                  if (producto.cincuenta_g)
+                    detalleTablaBody.innerHTML +=
+                    `<tr><td>50g</td><td>₡${producto.cincuenta_g}</td></tr>`;
+
+                  if (producto.veinticinco_g)
+                    detalleTablaBody.innerHTML +=
+                    `<tr><td>25g</td><td>₡${producto.veinticinco_g}</td></tr>`;
+
+                  if (producto.quince_g)
+                    detalleTablaBody.innerHTML += `<tr><td>15g</td><td>₡${producto.quince_g}</td></tr>`;
+
+                  if (producto.diez_g)
+                    detalleTablaBody.innerHTML += `<tr><td>10g</td><td>₡${producto.diez_g}</td></tr>`;
+
+                }
+
+                if (producto.tipoProducto === "UNITARIO") {
+
+                  const presentacion = `${producto.unidadCantidad}${producto.unidadMedida}`;
+
+                  detalleTablaBody.innerHTML += `
+<tr>
+<td>${presentacion}</td>
+<td>₡${producto.precioUnitario}</td>
+</tr>
+`;
+
+                }
+
+                detalleContainer.style.display = "flex";
+
+              });
+
+            }
+
+
+
+            fila.querySelector(".editar")
+              .addEventListener("click", () => abrirFormularioEditar(producto));
+
+            fila.querySelector(".eliminar")
+              .addEventListener("click", () => eliminarProducto(producto.id, producto.nombre));
+
+          });
+
+        } catch (err) {
+
+          tbody.innerHTML = `<tr><td colspan="9">No se encontró el producto</td></tr>`;
+          console.error(err);
+
+        }
+
+      }
+
+
+
+      function abrirFormularioAgregar(tipo) {
+
+        tipoProductoSeleccionado = tipo;
+        editandoId = null;
+
+        form.reset();
+
+        if (tipo === "ESPECIA") {
+
+          tituloForm.textContent = "Agregar Nuevo Producto";
+          camposEspecia.style.display = "block";
+          camposUnitario.style.display = "none";
+
+        } else {
+
+          tituloForm.textContent = "Agregar Nuevo Producto";
+          camposEspecia.style.display = "none";
+          camposUnitario.style.display = "block";
+
+        }
+
+        formContainer.style.display = "flex";
+        submitBtn.textContent = "Agregar";
+
+        form.nombre.focus();
+
+      }
+
+      function abrirFormularioEditar(producto) {
+
+        tipoProductoSeleccionado = producto.tipoProducto;
+        editandoId = producto.id;
+
+        formContainer.style.display = "flex";
+        submitBtn.textContent = "Actualizar";
+
+        form.nombre.value = producto.nombre;
+        form.stockCantidad.value = producto.stockCantidad;
+        form.stockUnidad.value = producto.stockUnidad;
+        form.imagenURL.value = producto.imagenURL || "";
+
+        if (producto.tipoProducto === "ESPECIA") {
+
+          camposEspecia.style.display = "block";
+          camposUnitario.style.display = "none";
+
+          form.kilo.value = producto.kilo || "";
+          form.minimoGramos.value = producto.minimoGramos || 100;
+
+        } else {
+
+          camposEspecia.style.display = "none";
+          camposUnitario.style.display = "block";
+
+          form.precioUnitario.value = producto.precioUnitario || "";
+          form.unidadCantidad.value = producto.unidadCantidad || "";
+          form.unidadMedida.value = producto.unidadMedida || "";
+
+        }
+
+        form.nombre.focus();
+
+      }
+
+
+
+      btnCerrarForm
+        .addEventListener("click", () => formContainer.style.display = "none");
+
+      cerrarDetalleBtn
+        .addEventListener("click", () => detalleContainer.style.display = "none");
+
+
+
+      form.addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+
+        // Generar automáticamente la URL de la imagen según el nombre del producto
+        let nombreProducto = form.nombre.value.trim();
+        let imagenURL = 'img/' + nombreProducto
+          .toUpperCase() // todo en mayúscula
+          .replace(/\s+/g, '_') // espacios → guion bajo
+          +
+          '.jpg';
+
+        let productoData = {
+
+          tipoProducto: tipoProductoSeleccionado,
+
+          nombre: form.nombre.value.trim(),
+          stockCantidad: parseFloat(form.stockCantidad.value),
+          stockUnidad: form.stockUnidad.value.trim(),
+
+          kilo: parseFloat(form.kilo.value),
+          minimoGramos: parseInt(form.minimoGramos.value),
+
+          imagenURL: imagenURL
+
+        };
+
+        if (tipoProductoSeleccionado === "UNITARIO") {
+
+          productoData.precioUnitario = parseFloat(form.precioUnitario.value);
+          productoData.unidadCantidad = parseFloat(form.unidadCantidad.value);
+          productoData.unidadMedida = form.unidadMedida.value;
+
+        }
+
+
+
+        try {
+
+          let res;
+
+          if (editandoId === null) {
+
+            res = await fetch("http://localhost:8082/api/productos", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(productoData)
+            });
+
+          } else {
+
+            ultimoEditadoId = editandoId;
+
+            res = await fetch(`http://localhost:8082/api/productos/actualizar/${editandoId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(productoData)
+            });
+
+          }
+
+          if (!res.ok) {
+
+            const mensajeError = await res.text();
+
+            if (res.status === 409) {
+              alert(mensajeError);
+            } else {
+              alert("Error al guardar producto");
+            }
+
+            return;
+
+          }
+
+          formContainer.style.display = "none";
+          buscadorInput.value = "";
+
+          await cargarProductos();
+
+        } catch (err) {
+
+          alert("Error en la solicitud");
+          console.error(err);
+
+        }
+
+      });
+
+
+
+      async function eliminarProducto(id, nombre) {
+
+        if (!confirm(`¿Seguro que quieres eliminar el producto "${nombre}"?`))
+          return;
+
+        try {
+
+          const res = await fetch(`http://localhost:8082/api/productos/eliminar/${id}`, {
+            method: "DELETE"
+          });
+
+          if (res.status === 204) {
+            await cargarProductos();
+          }
+
+        } catch (err) {
+
+          alert("Error en la solicitud");
+          console.error(err);
+
+        }
+
+      }
+
+
+
+      buscadorInput.addEventListener("input", async () => {
+
+        const texto = buscadorInput.value.trim();
+
+        let url =
+          texto === "" ?
+          "http://localhost:8082/api/productos" :
+          /^\d+$/.test(texto) ?
+          `http://localhost:8082/api/productos/buscarId/${texto}` :
+          `http://localhost:8082/api/productos/buscarNombre/${texto}`;
+
+        cargarProductos(url);
+
+      });
+
+
+
+      btnAgregar
+        .addEventListener("click", () => abrirFormularioAgregar("ESPECIA"));
+
+      btnAgregarUnitario
+        .addEventListener("click", () => abrirFormularioAgregar("UNITARIO"));
+
+
+
+      cargarProductos();
+
+    });
+  </script>
+</body>
+
+</html>
