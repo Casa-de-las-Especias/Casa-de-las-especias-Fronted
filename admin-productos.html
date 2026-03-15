@@ -303,6 +303,8 @@ style="max-width:60px; max-height:60px;">
           tbody.innerHTML = `<tr><td colspan="9">No se encontró el producto</td></tr>`;
           console.error(err);
 
+          setTimeout(() => cargarProductos(url), 3000); // reintenta cada 3 segundos
+
         }
 
       }
