@@ -181,7 +181,7 @@
 
 
 
-      async function cargarProductos(url = "http://localhost:8082/api/productos") {
+      async function cargarProductos(url = "https://casa-de-las-especias-web.onrender.com/api/productos") {
 
         tbody.innerHTML = "<tr><td colspan='9'>Cargando...</td></tr>";
 
@@ -426,7 +426,7 @@ style="max-width:60px; max-height:60px;">
 
           if (editandoId === null) {
 
-            res = await fetch("http://localhost:8082/api/productos", {
+            res = await fetch("https://casa-de-las-especias-web.onrender.com/api/productos", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"
@@ -438,7 +438,7 @@ style="max-width:60px; max-height:60px;">
 
             ultimoEditadoId = editandoId;
 
-            res = await fetch(`http://localhost:8082/api/productos/actualizar/${editandoId}`, {
+            res = await fetch(`https://casa-de-las-especias-web.onrender.com/api/productos/actualizar/${editandoId}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json"
@@ -485,7 +485,7 @@ style="max-width:60px; max-height:60px;">
 
         try {
 
-          const res = await fetch(`http://localhost:8082/api/productos/eliminar/${id}`, {
+          const res = await fetch(`https://casa-de-las-especias-web.onrender.com/api/productos/eliminar/${id}`, {
             method: "DELETE"
           });
 
@@ -510,10 +510,10 @@ style="max-width:60px; max-height:60px;">
 
         let url =
           texto === "" ?
-          "http://localhost:8082/api/productos" :
+          "https://casa-de-las-especias-web.onrender.com/api/productos" :
           /^\d+$/.test(texto) ?
-          `http://localhost:8082/api/productos/buscarId/${texto}` :
-          `http://localhost:8082/api/productos/buscarNombre/${texto}`;
+          `https://casa-de-las-especias-web.onrender.com/api/productos/buscarId/${texto}` :
+          `https://casa-de-las-especias-web.onrender.com/api/productos/buscarNombre/${texto}`;
 
         cargarProductos(url);
 
